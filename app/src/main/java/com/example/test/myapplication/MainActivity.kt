@@ -41,15 +41,25 @@ class MainActivity : AppCompatActivity() {
         //Worker setup
         //We can make OneTime work or Periodic workRequest
         //Smallest repeat interval is 900000ms which equals 15 minutes. Anything less will be set to 15m anyway
-//        PeriodicWorkRequest.Builder(WorkerExample::class.java, 15, TimeUnit.MINUTES)
+        /**        PeriodicWorkRequest.Builder(WorkerExample::class.java, 15, TimeUnit.MINUTES)*/
         val workTest = OneTimeWorkRequest.Builder(WorkerExample::class.java)
             .addTag("myWork")
             .setConstraints(myConstraints)
             .setInputData(data.build())
-            //Backoff policy is optional, it defines retry behavior. Exponential is default
+            //Backoff policy is optional, it defines retry behavior. Exponential by default
             .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 300L, TimeUnit.SECONDS)
             .build()
-        WorkManager.getInstance().enqueue(workTest) //work started!
+
+        //starting work
+        WorkManager.getInstance()
+            .enqueue(workTest) //work started!
+
+        //Chaining example:
+        /**WorkManager.getInstance()
+         * .beginWith(setOf(workTest, workTest).toList())
+         * .then(workTest)
+         * .enqueue()
+         */
 
         //Work observer setup. We can get current worker by id or by tag, so we don't have to manage the worker object
         WorkManager.getInstance().getWorkInfoByIdLiveData(workTest.id).observe(this, Observer { workInfo ->
@@ -67,10 +77,10 @@ class MainActivity : AppCompatActivity() {
 
     //Log example for this worker. Note a slight delay between actual event and observer reaction
     /**
-     *10:38:02.718 MAIN_THREAD: work enqueued
-     *10:38:02.718 WORKER: doWork: start with param = value
-     *10:38:02.748 MAIN_THREAD: work is running
-     *10:38:32.718 WORKER: doWork: end
-     *10:38:32.768 MAIN_THREAD: work done Tue Apr 02 10:38:32 GMT+06:00 2019
+     * 10:38:02.718 MAIN_THREAD: work enqueued
+     * 10:38:02.718 WORKER: doWork: start with param = value
+     * 10:38:02.748 MAIN_THREAD: work is running
+     * 10:38:32.718 WORKER: doWork: end
+     * 10:38:32.768 MAIN_THREAD: work done Tue Apr 02 10:38:32 GMT+06:00 2019
      */
 }
